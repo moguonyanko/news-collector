@@ -43,14 +43,14 @@
 
                     <div class="form-group">
                         <label>読者ターゲット</label>
-                        <select name="genre">
-                            <option value="初心者" {% if default_genre=='Beginner' %}selected{% endif %}>初心者向け</option>
-                            <option value="システム管理者" {% if default_genre=='System Administrator' %}selected{% endif %}>
+                        <select name="target">
+                            <option value="初心者" {% if default_target=='Beginner' %}selected{% endif %}>初心者向け</option>
+                            <option value="システム管理者" {% if default_target=='System Administrator' %}selected{% endif %}>
                                 システム管理者向け</option>
-                            <option value="経営層" {% if default_genre=='CISO' %}selected{% endif %}>経営層・CISO向け</option>
-                            <option value="研究者" {% if default_genre=='Security Researcher' %}selected{% endif %}>研究者向け
+                            <option value="経営層" {% if default_target=='CISO' %}selected{% endif %}>経営層・CISO向け</option>
+                            <option value="研究者" {% if default_target=='Security Researcher' %}selected{% endif %}>研究者向け
                             </option>
-                            <option value="一般" {% if default_genre=='General' %}selected{% endif %}>一般向け</option>
+                            <option value="一般" {% if default_target=='General' %}selected{% endif %}>一般向け</option>
                         </select>
                     </div>
                 </div>

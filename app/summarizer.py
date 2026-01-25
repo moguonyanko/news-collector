@@ -6,7 +6,7 @@ from .config import get_settings
 
 logger = logging.getLogger(__name__)
 
-def summarize_articles(articles: list[dict], genre: str, length: int) -> list[dict]:
+def summarize_articles(articles: list[dict], target: str, length: int) -> list[dict]:
     settings = get_settings()
     api_key = settings["gemini_api_key"]
     
@@ -26,7 +26,7 @@ def summarize_articles(articles: list[dict], genre: str, length: int) -> list[di
         try:
             prompt = f"""
             You are a professional news analyst.
-            Summarize the following news article for a "{genre}" audience.
+            Summarize the following news article for a "{target}" audience.
              The summary should be approximately {length} characters long.
              The summary MUST be in the same language as the original article (do not translate unless the article is multilingual).
              

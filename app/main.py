@@ -30,7 +30,7 @@ async def index(request: Request):
         "urls": urls_str,
         "default_days": settings["default_days"],
         "default_summary_length": settings["default_summary_length"],
-        "default_genre": settings["default_genre"]
+        "default_target": settings["default_target"]
     })
 
 @app.post("/collect", response_class=HTMLResponse)
@@ -39,12 +39,12 @@ async def collect(
     urls: str = Form(...),
     days: int = Form(...),
     length: int = Form(...),
-    genre: str = Form(...)
+    target: str = Form(...)
 ):
     try:
         url_list = [u.strip() for u in urls.split("\n") if u.strip()]
         
-        logger.info(f"Collecting from {len(url_list)} URLs. Days={days}, Genre={genre}")
+        logger.info(f"Collecting from {len(url_list)} URLs. Days={days}, Target={target}")
         
         # Scrape
         articles = await scrape_urls(url_list, days)
@@ -61,7 +61,7 @@ async def collect(
         articles = articles[:max_articles]
         
         # Summarize
-        summarized = summarize_articles(articles, genre, length)
+        summarized = summarize_articles(articles, target, length)
         
         return templates.TemplateResponse("results.html", {
             "request": request,
