@@ -2,7 +2,7 @@ import asyncio
 from playwright.async_api import async_playwright
 from datetime import datetime, timedelta
 import logging
-from urllib.parse import urljoin, urlparse
+from urllib.parse import urlparse
 from google import genai
 import json
 from .config import get_settings
