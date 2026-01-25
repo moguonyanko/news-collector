@@ -10,12 +10,8 @@ def summarize_articles(articles: list[dict], target: str, length: int) -> list[d
     settings = get_settings()
     api_key = settings["gemini_api_key"]
     
-    if not api_key or api_key == "YOUR_API_KEY_HERE":
-        logger.warning("Gemini API Key not set. Returning mock summaries.")
-        # Return mock if no key
-        for article in articles:
-            article["summary"] = f"[MOCK SUMMARY] (API Key missing) This is a summary of {article['title']}. content length: {len(article['content'])}"
-        return articles
+    if not api_key:
+        raise ValueError("Gemini API Key is missing in settings")
 
     client = genai.Client(api_key=api_key)
     model_name = settings["gemini_model"]
@@ -43,24 +39,21 @@ def summarize_articles(articles: list[dict], target: str, length: int) -> list[d
             except Exception as e:
                 logger.error(f"Error with model {model_name}: {e}")
                 
-                # Fallback logic
-                if "404" in str(e) or "not found" in str(e).lower():
+                # Fallback to default model if different
+                default_model = settings["default_gemini_model"]
+                if model_name != default_model:
                     try:
-                        logger.warning(f"Model {model_name} not found. Trying gemini-1.5-flash.")
-                        fallback_model = "gemini-1.5-flash"
+                        logger.warning(f"Falling back to default model: {default_model}")
                         response = client.models.generate_content(
-                            model=fallback_model,
+                            model=default_model,
                             contents=prompt
                         )
                         summary_text = response.text.strip()
-                    except Exception as fallback_e:
-                        logger.error(f"Fallback model also failed: {fallback_e}")
-                        # Final fallback: Use truncated content
+                    except Exception as e2:
+                        logger.error(f"Error with fallback model {default_model}: {e2}")
                         summary_text = article['content'][:length] + "..."
                         article["summary_note"] = " (Auto-generated summary unavailable)"
                 else:
-                    # For other errors (like 429), go straight to truncation
-                    logger.error(f"API Error (likely 429 or other): {e}")
                     summary_text = article['content'][:length] + "..."
                     article["summary_note"] = " (Auto-generated summary unavailable)"
             
@@ -72,8 +65,6 @@ def summarize_articles(articles: list[dict], target: str, length: int) -> list[d
             
         except Exception as e:
             logger.error(f"Error summarizing article {article['title']}: {e}")
-            # Absolute final fallback
-            article["summary"] = article['content'][:length] + "..."
-            summarized_articles.append(article)
+            raise e
             
     return summarized_articles

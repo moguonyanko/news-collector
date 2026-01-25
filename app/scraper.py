@@ -3,11 +3,14 @@ from playwright.async_api import async_playwright
 from datetime import datetime, timedelta
 import logging
 from urllib.parse import urljoin, urlparse
+from google import genai
+import json
+from .config import get_settings
 
 logger = logging.getLogger(__name__)
 
-async def scrape_site(page, url, days):
-    logger.info(f"Scraping {url}")
+async def scrape_site(page, url, days, target):
+    logger.info(f"Scraping {url} for target: {target}")
     try:
         await page.goto(url, timeout=30000)
         await page.wait_for_load_state("domcontentloaded")
@@ -51,11 +54,92 @@ async def scrape_site(page, url, days):
                continue
                
             candidates.append(l)
-            if len(candidates) >= 5:
+            if len(candidates) >= 20:
                 break
         
+        # Filter candidates using LLM
+        settings = get_settings()
+        api_key = settings.get("gemini_api_key")
+        
+        if not api_key:
+            raise ValueError("Gemini API Key is missing in settings")
+        
+        filtered_candidates = []
+        try:
+                client = genai.Client(api_key=api_key)
+                prompt = f"""
+                You are a news editor. Select the most relevant articles for a "{target}" audience from the list below.
+                Return a JSON object with a key "urls" containing a list of strings of the selected URLs.
+                Select at most 5 articles.
+                
+                Articles:
+                {json.dumps([{'url': c['href'], 'text': c['text']} for c in candidates], ensure_ascii=False)}
+                """
+                
+                response = client.models.generate_content(
+                    model=settings.get("gemini_model", "gemini-2.5-flash"),
+                    contents=prompt,
+                    config={"response_mime_type": "application/json"}
+                )
+                
+                try:
+                    selected_urls = json.loads(response.text).get("urls", [])
+                    logger.info(f"LLM filtered {len(candidates)} -> {len(selected_urls)} articles.")
+                except json.JSONDecodeError:
+                    logger.error(f"Failed to parse JSON from LLM: {response.text}")
+                    selected_urls = []
+
+                for c in candidates:
+                    if c['href'] in selected_urls:
+                        filtered_candidates.append(c)
+                
+                # If LLM returns fewer than expected or nothing, we might want to fill up, but user asked for target.
+                # If 0, fallback to simple top 5? 
+                # "targetに指定された情報を参考にして取得するようにしなさい" -> If none match, maybe none should be returned?
+                # But to maintain usability, if LLM fails completely (empty), maybe default to top 5.
+                if not filtered_candidates and candidates:
+                    logger.warning("LLM selected 0 articles. Falling back to top 3.")
+                    filtered_candidates = candidates[:3]
+
+        except Exception as e:
+            logger.error(f"Error filtering candidates with LLM: {e}")
+            
+            # Fallback to default model if different
+            model_name = settings.get("gemini_model", settings["default_gemini_model"])
+            default_model = settings["default_gemini_model"]
+            
+            if model_name != default_model:
+                try:
+                    logger.warning(f"Falling back to default model: {default_model}")
+                    response = client.models.generate_content(
+                        model=default_model,
+                        contents=prompt,
+                        config={"response_mime_type": "application/json"}
+                    )
+                     
+                    try:
+                        selected_urls = json.loads(response.text).get("urls", [])
+                        logger.info(f"LLM (fallback) filtered {len(candidates)} -> {len(selected_urls)} articles.")
+                        
+                        for c in candidates:
+                            if c['href'] in selected_urls:
+                                filtered_candidates.append(c)
+                                
+                        if not filtered_candidates and candidates:
+                             filtered_candidates = candidates[:3]
+                             
+                    except json.JSONDecodeError:
+                        logger.error(f"Failed to parse JSON from LLM fallback: {response.text}")
+                        filtered_candidates = candidates[:5]
+
+                except Exception as e2:
+                    logger.error(f"Error filtering with fallback model {default_model}: {e2}")
+                    filtered_candidates = candidates[:5]
+            else:
+                filtered_candidates = candidates[:5]
+
         # Now visit candidates to get content
-        for candidate in candidates:
+        for candidate in filtered_candidates:
             try:
                 # In a real app, we would parallelize this carefully
                 await page.goto(candidate['href'], timeout=15000)
@@ -89,7 +173,7 @@ async def scrape_site(page, url, days):
         logger.error(f"Error scraping {url}: {e}")
         return []
 
-async def scrape_urls(urls: list[str], days: int = 7):
+async def scrape_urls(urls: list[str], days: int = 7, target: str = "Beginner"):
     async with async_playwright() as p:
         browser = await p.chromium.launch()
         context = await browser.new_context(user_agent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
@@ -107,7 +191,7 @@ async def scrape_urls(urls: list[str], days: int = 7):
             async with semaphore:
                 page = await context.new_page()
                 try:
-                    site_articles = await scrape_site(page, url, days)
+                    site_articles = await scrape_site(page, url, days, target)
                     all_articles.extend(site_articles)
                 finally:
                     await page.close()

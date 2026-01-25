@@ -47,7 +47,7 @@ async def collect(
         logger.info(f"Collecting from {len(url_list)} URLs. Days={days}, Target={target}")
         
         # Scrape
-        articles = await scrape_urls(url_list, days)
+        articles = await scrape_urls(url_list, days, target)
         
         if not articles:
             return templates.TemplateResponse("results.html", {
