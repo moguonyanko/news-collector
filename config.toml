@@ -12,7 +12,5 @@ default_days = 3
 default_summary_length = 500
 default_target = "Beginner"
 gemini_model = "gemini-2.5-flash"
-#Gemini 3は429 RESOURCE_EXHAUSTEDになりやすいためコメントアウト
-#gemini_model = "gemini-3-flash-preview"
 default_gemini_model = "gemini-2.5-flash"
 max_articles = 10
