@@ -1,12 +1,12 @@
 {% if error %}
 <div class="error-message">
-  <h3>System Alert</h3>
+  <h3>システムアラート</h3>
   <p>{{ error }}</p>
 </div>
 {% else %}
 <div class="results-header">
-  <h2>Collection Complete</h2>
-  <span class="badge">{{ articles|length }} Articles Found</span>
+  <h2>収集完了</h2>
+  <span class="badge">{{ articles|length }} 件の記事が見つかりました</span>
 </div>
 
 <div class="articles-grid">
@@ -23,7 +23,7 @@
       {% endif %}
     </div>
     <div class="card-actions">
-      <a href="{{ article.url }}" target="_blank" class="btn-text">Read Source -&gt;</a>
+      <a href="{{ article.url }}" target="_blank" class="btn-text">記事を読む -></a>
     </div>
   </article>
   {% endfor %}

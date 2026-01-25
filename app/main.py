@@ -52,7 +52,7 @@ async def collect(
         if not articles:
             return templates.TemplateResponse("results.html", {
                 "request": request,
-                "error": "No articles found matching the criteria or scraping failed."
+                "error": "指定された条件に一致する記事が見つからないか、スクレイピングに失敗しました。"
             })
             
         # Limit the number of articles

@@ -25,10 +25,10 @@ def summarize_articles(articles: list[dict], genre: str, length: int) -> list[di
     for article in articles:
         try:
             prompt = f"""
-            You are a professional security news analyst.
-            Summarize the following security news article for a "{genre}" audience.
+            You are a professional news analyst.
+            Summarize the following news article for a "{genre}" audience.
              The summary should be approximately {length} characters long.
-             If the article is not related to cybersecurity, output "IRRELEVANT".
+             The summary MUST be in the same language as the original article (do not translate unless the article is multilingual).
              
              Title: {article['title']}
              Content: {article['content'][:5000]}
