@@ -8,8 +8,8 @@ urls = [
     "https://codebook.machinarecord.com/",
     "https://japan.zdnet.com/security/"
 ]
-default_days = 7
-default_summary_length = 1000
+default_days = 3
+default_summary_length = 500
 default_target = "Beginner"
 gemini_model = "gemini-3-flash-preview"
 default_gemini_model = "gemini-2.5-flash"
