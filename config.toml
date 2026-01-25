@@ -1,0 +1,15 @@
+[settings]
+urls = [
+    "https://www.security-next.com/",
+    "https://cybersecuritynews.com/amp/",
+    "https://www.bleepingcomputer.com/",
+    "https://thedfirreport.com/",
+    "https://www.cisa.gov/known-exploited-vulnerabilities-catalog",
+    "https://codebook.machinarecord.com/",
+    "https://japan.zdnet.com/security/"
+]
+default_days = 7
+default_summary_length = 1000
+default_genre = "Beginner"
+gemini_model = "gemini-2.5-flash"
+max_articles = 3

@@ -1,0 +1,31 @@
+{% if error %}
+<div class="error-message">
+  <h3>System Alert</h3>
+  <p>{{ error }}</p>
+</div>
+{% else %}
+<div class="results-header">
+  <h2>Collection Complete</h2>
+  <span class="badge">{{ articles|length }} Articles Found</span>
+</div>
+
+<div class="articles-grid">
+  {% for article in articles %}
+  <article class="news-card">
+    <div class="card-header">
+      <a href="{{ article.url }}" target="_blank" class="source-tag">{{ article.source }}</a>
+    </div>
+    <h3><a href="{{ article.url }}" target="_blank">{{ article.title }}</a></h3>
+    <div class="summary">
+      {{ article.summary }}
+      {% if article.summary_note %}
+      <span class="summary-note" style="color: #ff6b6b; font-size: 0.8em;">{{ article.summary_note }}</span>
+      {% endif %}
+    </div>
+    <div class="card-actions">
+      <a href="{{ article.url }}" target="_blank" class="btn-text">Read Source -&gt;</a>
+    </div>
+  </article>
+  {% endfor %}
+</div>
+{% endif %}
