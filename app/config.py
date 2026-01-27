@@ -27,5 +27,6 @@ def get_settings():
         "gemini_model": settings.get("gemini_model", "gemini-2.5-flash"),
         "default_gemini_model": settings.get("default_gemini_model", "gemini-2.5-flash"),
         "max_articles": settings.get("max_articles", 10),
+        "max_scrape_size": settings.get("max_scrape_size", 20),
         "gemini_api_key": os.getenv("GEMINI_API_KEY")
     }

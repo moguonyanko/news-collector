@@ -11,6 +11,7 @@ logger = logging.getLogger(__name__)
 
 async def scrape_site(page, url, days, target):
     logger.info(f"Scraping {url} for target: {target}")
+    settings = get_settings()
     try:
         await page.goto(url, timeout=30000)
         await page.wait_for_load_state("domcontentloaded")
@@ -54,11 +55,10 @@ async def scrape_site(page, url, days, target):
                continue
                
             candidates.append(l)
-            if len(candidates) >= 20:
+            if len(candidates) >= settings.get("max_scrape_size", 20):
                 break
         
         # Filter candidates using LLM
-        settings = get_settings()
         api_key = settings.get("gemini_api_key")
         
         if not api_key:
