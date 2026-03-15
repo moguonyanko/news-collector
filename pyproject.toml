@@ -1,0 +1,17 @@
+[project]
+name = "news-collector"
+version = "0.1.0"
+description = "News Collector Project"
+readme = "README.md"
+requires-python = ">=3.14"
+dependencies = [
+    "beautifulsoup4",
+    "fastapi",
+    "google-genai",
+    "httpx",
+    "jinja2",
+    "playwright",
+    "python-dotenv",
+    "python-multipart",
+    "uvicorn",
+]
